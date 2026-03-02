@@ -1,0 +1,111 @@
+Microsoft Office/M365/O365 Files and Folders Found
+Generated: Thu Jan 15 14:47:55 EST 2026
+======================================================
+
+1. APPLICATIONS
+======================================================
+  [DIR] /Applications/OneDrive.app (Size: 1.1G)
+
+2. USER LIBRARY - CONTAINERS
+======================================================
+  [DIR] /Users/andrewrobb/Library/Containers/com.microsoft.OneDriveLauncher (Size:  28K)
+  [DIR] /Users/andrewrobb/Library/Containers/com.microsoft.OneDrive.FinderSync (Size:  32K)
+  [DIR] /Users/andrewrobb/Library/Containers/com.microsoft.OneDrive.FileProvider (Size:  12M)
+  [DIR] /Users/andrewrobb/Library/Containers/com.microsoft.Outlook.CalendarWidget (Size: 308K)
+  [DIR] /Users/andrewrobb/Library/Containers/com.microsoft.Excel.widgetextension (Size: 416K)
+  [DIR] /Users/andrewrobb/Library/Containers/com.microsoft.Powerpoint.widgetextension (Size: 400K)
+  [DIR] /Users/andrewrobb/Library/Containers/com.microsoft.Word.widgetextension (Size: 396K)
+  [DIR] /Users/andrewrobb/Library/Containers/com.microsoft.Microsoft-Mashup-Container (Size:  48K)
+
+3. USER LIBRARY - GROUP CONTAINERS
+======================================================
+  [DIR] /Users/andrewrobb/Library/Group Containers/UBF8T346G9.OneDriveStandaloneSuite (Size: 4.0K)
+
+4. USER LIBRARY - APPLICATION SUPPORT
+======================================================
+  [DIR] /Users/andrewrobb/Library/Application Support/Microsoft (Size:  44M)
+  [DIR] /Users/andrewrobb/Library/Application Support/OneDrive (Size:  91M)
+  [DIR] /Users/andrewrobb/Library/Application Support/com.microsoft.SharePoint-mac (Size:  20K)
+  [DIR] /Users/andrewrobb/Library/Application Support/com.microsoft.OneDrive (Size:  20K)
+
+5. USER LIBRARY - PREFERENCES
+======================================================
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.autoupdate.fba.plist (Size: 492B)
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.SharePoint-mac.plist (Size: 2.6K)
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.autoupdate2.plist (Size: 3.3K)
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.OneDrive.plist (Size: 3.2K)
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.OneDriveStandaloneUpdater.plist (Size: 106B)
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.office.plist (Size: 3.3K)
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.shared.plist (Size: 2.1K)
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.OneDriveUpdater.plist (Size: 493B)
+  [FILE] /Users/andrewrobb/Library/Preferences/com.microsoft.teams2.helper.plist (Size: 250B)
+
+6. USER LIBRARY - CACHES
+======================================================
+  [DIR] /Users/andrewrobb/Library/Caches/OneDrive (Size: 188K)
+  [DIR] /Users/andrewrobb/Library/Caches/com.microsoft.SharePoint-mac (Size:  11M)
+  [DIR] /Users/andrewrobb/Library/Caches/com.microsoft.autoupdate.fba (Size: 300K)
+  [DIR] /Users/andrewrobb/Library/Caches/com.microsoft.OneDriveStandaloneUpdater (Size: 2.1M)
+  [DIR] /Users/andrewrobb/Library/Caches/com.microsoft.autoupdate2 (Size: 596K)
+  [DIR] /Users/andrewrobb/Library/Caches/com.microsoft.OneDrive (Size: 4.8M)
+  [DIR] /Users/andrewrobb/Library/Caches/com.microsoft.SyncReporter (Size: 2.1M)
+  [DIR] /Users/andrewrobb/Library/Caches/com.microsoft.OneDriveUpdater (Size: 852K)
+
+7. USER LIBRARY - SAVED APPLICATION STATE
+======================================================
+
+8. USER LIBRARY - LAUNCH AGENTS
+======================================================
+
+9. USER LIBRARY - LOGS
+======================================================
+  [DIR] /Users/andrewrobb/Library/Logs/Microsoft Teams Helper (Renderer) (Size:   0B)
+
+10. USER LIBRARY - COOKIES
+======================================================
+
+11. USER LIBRARY - WEBKIT
+======================================================
+  [DIR] /Users/andrewrobb/Library/WebKit/com.microsoft.OneDrive (Size: 424K)
+
+12. SYSTEM LIBRARY - LAUNCH DAEMONS
+======================================================
+  [FILE] /Library/LaunchDaemons/com.microsoft.OneDriveStandaloneUpdaterDaemon.plist (Size: 793B)
+  [FILE] /Library/LaunchDaemons/com.microsoft.teams.TeamsUpdaterDaemon.plist (Size: 271B)
+  [FILE] /Library/LaunchDaemons/com.microsoft.OneDriveUpdaterDaemon.plist (Size: 749B)
+  [FILE] /Library/LaunchDaemons/com.microsoft.office.licensingV2.helper.plist (Size: 657B)
+  [FILE] /Library/LaunchDaemons/com.microsoft.autoupdate.helper.plist (Size: 428B)
+
+13. SYSTEM LIBRARY - LAUNCH AGENTS
+======================================================
+  [FILE] /Library/LaunchAgents/com.microsoft.SyncReporter.plist (Size: 603B)
+  [FILE] /Library/LaunchAgents/com.microsoft.OneDriveStandaloneUpdater.plist (Size: 523B)
+  [FILE] /Library/LaunchAgents/com.microsoft.update.agent.plist (Size: 405B)
+
+14. SYSTEM LIBRARY - PRIVILEGED HELPER TOOLS
+======================================================
+  [FILE] /Library/PrivilegedHelperTools/com.microsoft.autoupdate.helper (Size: 302K)
+  [FILE] /Library/PrivilegedHelperTools/com.microsoft.office.licensingV2.helper (Size: 1.7M)
+
+15. ONEDRIVE DATA FOLDERS
+======================================================
+  NOTE: These contain your synced files. Back up important data before removing!
+  [DIR] /Users/andrewrobb/OneDrive (Size:   0B)
+
+16. KEYCHAIN ENTRIES
+======================================================
+  NOTE: Keychain entries must be removed manually through Keychain Access app
+  Search for 'Microsoft' in Keychain Access and delete all entries
+
+======================================================
+SUMMARY
+======================================================
+Total items found: 44
+
+IMPORTANT NOTES:
+1. Review this file carefully before deleting anything
+2. OneDrive folders contain your synced files - back up if needed
+3. Close all Microsoft apps before removing files
+4. You may need to use 'sudo' for some system-level files
+5. After removal, empty Trash and restart your Mac
+6. Microsoft Edge files have been EXCLUDED from this search
