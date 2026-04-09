@@ -242,6 +242,7 @@ APPS=(
     "Microsoft Teams classic.app"
     "OneDrive.app"
     "Microsoft SharePoint.app"
+    "Microsoft Error Reporting.app"
 )
 $KEEP_EDGE   || APPS+=("Microsoft Edge.app")
 $KEEP_WINAPP || APPS+=("Windows App.app" "Microsoft Remote Desktop.app")
@@ -265,9 +266,14 @@ clean_user() {
 
     section "Phase 3: User cleanup — $user"
 
-    # 3a. Containers
+    # 3a. Containers (bundle-ID and display-name variants)
     echo "  Containers..."
     remove_matching "$home/Library/Containers" "com.microsoft.*"
+    # Some macOS versions use display names instead of bundle IDs
+    for cname in "Microsoft Word" "Microsoft Excel" "Microsoft PowerPoint" \
+                 "Microsoft Outlook" "Microsoft OneNote" "Microsoft Error Reporting"; do
+        remove_item "$home/Library/Containers/$cname"
+    done
 
     # 3b. Group Containers
     echo "  Group Containers..."
@@ -297,6 +303,8 @@ clean_user() {
     # 3e. Preferences
     echo "  Preferences..."
     remove_matching "$home/Library/Preferences" "com.microsoft.*"
+    remove_matching "$home/Library/Preferences/ByHost" "com.microsoft.*"
+    remove_item "$home/Library/Preferences/Microsoft"
 
     # 3f. Caches
     echo "  Caches..."
@@ -330,7 +338,82 @@ clean_user() {
     echo "  Cookies..."
     remove_matching "$home/Library/Cookies" "com.microsoft.*"
 
-    # 3l. User Launch Agents
+    # 3l. iCloud containers (Mobile Documents)
+    echo "  iCloud containers..."
+    remove_matching "$home/Library/Mobile Documents" "iCloud~com~microsoft~*"
+
+    # 3m. CloudDocs session data
+    local clouddocs="$home/Library/Application Support/CloudDocs/session/containers"
+    if [ -d "$clouddocs" ]; then
+        echo "  CloudDocs session data..."
+        remove_matching "$clouddocs" "iCloud.com.microsoft.*"
+    fi
+
+    # 3n. File Provider configs
+    echo "  File Provider configs..."
+    remove_matching "$home/Library/Application Support/FileProvider" "com.microsoft.*"
+
+    # 3o. Recent document lists
+    local recentdocs="$home/Library/Application Support/com.apple.sharedfilelist/com.apple.LSSharedFileList.ApplicationRecentDocuments"
+    if [ -d "$recentdocs" ]; then
+        echo "  Recent document lists..."
+        remove_matching "$recentdocs" "com.microsoft.*"
+    fi
+
+    # 3p. CloudStorage (OneDrive File Provider mount points)
+    echo "  CloudStorage mounts..."
+    # Deregister File Provider domains first to avoid leaving the framework
+    # in an inconsistent state (phantom sidebar entries, Finder errors).
+    if ! $DRY_RUN; then
+        fileproviderctl domain remove com.microsoft.OneDrive.FileProvider 2>/dev/null || true
+        fileproviderctl domain remove com.microsoft.SharePoint-mac 2>/dev/null || true
+    fi
+    for cs in "$home/Library/CloudStorage"/OneDrive* "$home/Library/CloudStorage"/SharePoint*; do
+        [ -e "$cs" ] || continue
+        remove_item "$cs"
+    done
+
+    # 3q. Notification icon cache
+    local dnd_icons="$home/Library/DoNotDisturb/DB/IconCache"
+    if [ -d "$dnd_icons" ]; then
+        echo "  Notification icon cache..."
+        remove_matching "$dnd_icons" "com.microsoft.*"
+    fi
+
+    # 3r. Widget archive caches (chronod)
+    if [ -d "$home/Library/Group Containers/group.com.apple.chronod" ]; then
+        echo "  Widget archive cache..."
+        while IFS= read -r -d '' item; do
+            remove_item "$item"
+        done < <(find "$home/Library/Group Containers/group.com.apple.chronod" \
+            -maxdepth 6 \( -iname "*com.microsoft.*" -o -iname "*officemobile*" \) \
+            -print0 2>/dev/null)
+    fi
+
+    # 3s. Daemon Container caches (Microsoft subdirs only, not the UUID parents)
+    if [ -d "$home/Library/Daemon Containers" ]; then
+        echo "  Daemon Container caches..."
+        # Use -prune to remove the top-level com.microsoft.* dir without
+        # crawling into it and listing every nested lproj/asset individually.
+        while IFS= read -r -d '' item; do
+            remove_item "$item"
+        done < <(find "$home/Library/Daemon Containers" \
+            -maxdepth 8 -name "com.microsoft.*" -prune -print0 2>/dev/null)
+    fi
+
+    # 3t. Darwin user temp/cache directories (/private/var/folders)
+    echo "  System temp caches..."
+    local user_cache_dir user_temp_dir
+    user_cache_dir=$(sudo -u "$user" getconf DARWIN_USER_CACHE_DIR 2>/dev/null || echo "")
+    user_temp_dir=$(sudo -u "$user" getconf DARWIN_USER_TEMP_DIR 2>/dev/null || echo "")
+    if [ -n "$user_cache_dir" ] && [ -d "$user_cache_dir" ]; then
+        remove_matching "$user_cache_dir" "com.microsoft.*"
+    fi
+    if [ -n "$user_temp_dir" ] && [ -d "$user_temp_dir" ]; then
+        remove_matching "$user_temp_dir" "com.microsoft.*"
+    fi
+
+    # 3u. User Launch Agents
     echo "  User Launch Agents..."
     for la in "$home/Library/LaunchAgents"/com.microsoft.*; do
         [ -e "$la" ] || continue
@@ -342,7 +425,7 @@ clean_user() {
         fi
     done
 
-    # 3m. Login Items (legacy + modern SMAppService / BTM)
+    # 3v. Login Items (legacy + modern SMAppService / BTM)
     echo "  Login Items..."
     if ! $DRY_RUN; then
         # Build AppleScript exclusions dynamically
@@ -374,7 +457,7 @@ clean_user() {
         echo -e "  ${CYAN}[DRY RUN]${NC} Would clean login items and reset BTM agent"
     fi
 
-    # 3n. Dock icons
+    # 3w. Dock icons
     echo "  Dock icons..."
     local dock_plist="$home/Library/Preferences/com.apple.dock.plist"
     if [ -f "$dock_plist" ]; then
@@ -413,7 +496,7 @@ clean_user() {
         $dock_changed && ! $DRY_RUN && killall Dock 2>/dev/null || true
     fi
 
-    # 3o. OneDrive data folders
+    # 3x. OneDrive data folders
     local found_od=false
     for od_dir in "$home"/OneDrive*; do
         [ -d "$od_dir" ] || continue
@@ -432,8 +515,62 @@ clean_user() {
     done
     $found_od || true
 
-    # 3p. Legacy Office data
+    # Legacy Office data and directories
+    echo "  Legacy Office data..."
     remove_item "$home/Documents/Microsoft User Data"
+    remove_item "$home/Library/Microsoft"
+
+    # TCC privacy permissions (per-bundle reset)
+    echo "  Privacy permissions (TCC)..."
+    local tcc_bundles=(
+        com.microsoft.Word com.microsoft.Excel com.microsoft.Powerpoint
+        com.microsoft.Outlook com.microsoft.onenote.mac com.microsoft.teams
+        com.microsoft.teams2 com.microsoft.OneDrive com.microsoft.SharePoint-mac
+        com.microsoft.autoupdate2 com.microsoft.autoupdate.fba
+        com.microsoft.errorreporting com.microsoft.OneDriveLauncher
+        com.microsoft.OneDrive.FinderSync com.microsoft.OneDrive.FileProvider
+    )
+    for bid in "${tcc_bundles[@]}"; do
+        is_excluded "$bid" && continue
+        if $DRY_RUN; then
+            echo -e "  ${CYAN}[DRY RUN]${NC} Would reset TCC for $bid"
+            REMOVED=$((REMOVED + 1))
+        else
+            # Must run as target user to hit the user-level TCC database,
+            # not the system one (which root would target).
+            sudo -u "$user" tccutil reset All "$bid" 2>/dev/null && \
+                echo -e "  ${GREEN}[RESET]${NC}  TCC: $bid" || true
+        fi
+    done
+
+    # Notification Center stale entries
+    local ncprefs="$home/Library/Preferences/com.apple.ncprefs.plist"
+    if [ -f "$ncprefs" ]; then
+        echo "  Notification Center entries..."
+        local nc_i=0 nc_indices=()
+        while true; do
+            local bid
+            bid=$(/usr/libexec/PlistBuddy -c "Print :apps:${nc_i}:bundle-id" "$ncprefs" 2>/dev/null) || break
+            if [[ "$bid" == com.microsoft.* ]] && ! is_excluded "$bid"; then
+                nc_indices+=("$nc_i")
+            fi
+            nc_i=$((nc_i + 1))
+        done
+        local nc_j=${#nc_indices[@]}
+        while [ "$nc_j" -gt 0 ]; do
+            nc_j=$((nc_j - 1))
+            local nc_idx="${nc_indices[$nc_j]}"
+            local nc_bid
+            nc_bid=$(/usr/libexec/PlistBuddy -c "Print :apps:${nc_idx}:bundle-id" "$ncprefs" 2>/dev/null || echo "?")
+            if $DRY_RUN; then
+                echo -e "  ${CYAN}[DRY RUN]${NC} Would remove notification entry: $nc_bid"
+            else
+                /usr/libexec/PlistBuddy -c "Delete :apps:${nc_idx}" "$ncprefs" 2>/dev/null
+                echo -e "  ${GREEN}[REMOVED]${NC} Notification entry: $nc_bid"
+            fi
+            REMOVED=$((REMOVED + 1))
+        done
+    fi
 }
 
 for tu in "${TARGET_USERS[@]}"; do
@@ -527,6 +664,50 @@ for plugin in "/Library/Internet Plug-Ins"/Microsoft* "/Library/Internet Plug-In
     remove_item "$plugin"
 done
 
+# 4k. Teams Core Audio driver
+echo "  Audio plug-ins..."
+remove_item "/Library/Audio/Plug-Ins/HAL/MSTeamsAudioDevice.driver"
+
+# 4l. Spotlight importer
+echo "  Spotlight importers..."
+remove_item "/Library/Spotlight/Microsoft Office.mdimporter"
+
+# 4m. Legacy installer receipt bundles
+echo "  Legacy receipts..."
+for legacy_receipt in /Library/Receipts/Office2016_* /Library/Receipts/Microsoft_*; do
+    [ -e "$legacy_receipt" ] || continue
+    remove_item "$legacy_receipt"
+done
+
+# 4n. Package database (pkgutil --forget)
+echo "  Package database..."
+while IFS= read -r pkg; do
+    [ -z "$pkg" ] && continue
+    is_excluded "$pkg" && continue
+    if $DRY_RUN; then
+        echo -e "  ${CYAN}[DRY RUN]${NC} Would forget package: $pkg"
+        REMOVED=$((REMOVED + 1))
+    else
+        pkgutil --forget "$pkg" >/dev/null 2>&1 && \
+            echo -e "  ${GREEN}[FORGOT]${NC}  Package: $pkg" || true
+    fi
+done < <(pkgutil --pkgs 2>/dev/null | grep -i "com\.microsoft\." || true)
+
+# 4o. System-level TCC entries
+echo "  System TCC entries..."
+TCC_SYS_BUNDLES=(
+    com.microsoft.autoupdate.helper com.microsoft.OneDrive
+    com.microsoft.teams com.microsoft.teams2
+)
+for bid in "${TCC_SYS_BUNDLES[@]}"; do
+    is_excluded "$bid" && continue
+    if $DRY_RUN; then
+        echo -e "  ${CYAN}[DRY RUN]${NC} Would reset system TCC for $bid"
+    else
+        tccutil reset All "$bid" 2>/dev/null || true
+    fi
+done
+
 # ==============================================================================
 # Phase 5 — Discovery scan
 # ==============================================================================
@@ -534,9 +715,12 @@ section "Phase 5: Discovery scan for remaining traces"
 echo "  Scanning (this may take a moment)..."
 
 # Scan system and Library directories only — never touch user documents.
-SCAN_DIRS=(/Applications /Library /var/db/receipts)
+SCAN_DIRS=(/Applications /Library /var/db/receipts /Library/Audio /Library/Spotlight)
 for tu in "${TARGET_USERS[@]}"; do
     SCAN_DIRS+=("/Users/$tu/Library")
+    # Also scan user's Darwin temp/cache dirs
+    local_cache=$(sudo -u "$tu" getconf DARWIN_USER_CACHE_DIR 2>/dev/null || echo "")
+    [ -n "$local_cache" ] && [ -d "$local_cache" ] && SCAN_DIRS+=("$local_cache")
 done
 
 DISCOVERY_FILE=$(mktemp)
@@ -552,10 +736,10 @@ done
 REMAINING=$(sort -u "$DISCOVERY_FILE")
 rm -f "$DISCOVERY_FILE"
 if $KEEP_EDGE; then
-    REMAINING=$(echo "$REMAINING" | grep -vi "edge\|/Library/Microsoft$\|/Library/Microsoft/" || true)
+    REMAINING=$(echo "$REMAINING" | grep -vi -e "edge" -e "^/Library/Microsoft$" -e "^/Library/Microsoft/" -e "^/Library/Application Support/Microsoft$" || true)
 fi
 if $KEEP_WINAPP; then
-    REMAINING=$(echo "$REMAINING" | grep -vi "remote.desktop\|\.rdc\.\|windows.app" || true)
+    REMAINING=$(echo "$REMAINING" | grep -vi -e "remote.desktop" -e "\.rdc" -e "windows.app" || true)
 fi
 
 if [ -n "$REMAINING" ]; then
@@ -596,6 +780,18 @@ if ! $DRY_RUN; then
     echo "  Restarting Finder (clears sidebar & extension state)..."
     killall Finder 2>/dev/null || true
     echo -e "  ${GREEN}[DONE]${NC} Finder restarted"
+
+    # Restart Core Audio if Teams audio driver was removed
+    if [ ! -e "/Library/Audio/Plug-Ins/HAL/MSTeamsAudioDevice.driver" ]; then
+        echo "  Restarting Core Audio daemon..."
+        killall coreaudiod 2>/dev/null || true
+        echo -e "  ${GREEN}[DONE]${NC} Core Audio refreshed"
+    fi
+
+    # Restart Notification Center to pick up cleaned ncprefs
+    echo "  Restarting Notification Center..."
+    killall usernoted 2>/dev/null || true
+    echo -e "  ${GREEN}[DONE]${NC} Notification Center refreshed"
 fi
 
 # ==============================================================================
@@ -611,7 +807,8 @@ echo -e " ${YELLOW}Skipped:${NC} $SKIPPED items"
 echo -e " ${RED}Failed:${NC}  $FAILED items"
 echo ""
 echo " REMAINING MANUAL STEPS:"
-echo "  1. Open Keychain Access -> search 'Microsoft' -> delete entries"
+echo "  1. Open Keychain Access -> search 'Microsoft' -> delete Office entries"
+echo "     (or run: security delete-generic-password -l 'Microsoft Office Identities Cache 3')"
 echo "  2. Empty Trash"
-echo "  3. Restart your Mac (finalises BTM/startup item cleanup)"
+echo "  3. Restart your Mac (finalises BTM/startup item and cache cleanup)"
 echo "============================================================="
