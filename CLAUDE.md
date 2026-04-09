@@ -1,31 +1,42 @@
 # Office Cleanup Scripts
 
-macOS scripts for completely removing Microsoft Office, OneDrive, and Teams while preserving Edge, Windows App (Remote Desktop), and AutoUpdate (MAU).
+macOS scripts for completely removing all traces of Microsoft Office / M365 products.
 
 ## Scripts
 
 ### remove_microsoft_office.sh
-Removes all Microsoft Office apps, OneDrive, Teams, and their associated files (preferences, caches, containers, launch agents, etc.).
+Comprehensive, interactive removal of all Microsoft Office, OneDrive, Teams, SharePoint, and M365 traces from macOS.
 
 ```bash
-sudo bash remove_microsoft_office.sh
+sudo bash remove_microsoft_office.sh [--dry-run] [--all-users]
 ```
 
-**What it does:**
-- Checks for running Microsoft processes and prompts to quit them
-- Removes Office apps (Word, Excel, PowerPoint, Outlook, OneNote)
-- Removes OneDrive and Teams
-- Cleans up preferences, caches, containers, launch agents/daemons
-- Provides a summary of removed/skipped/failed items
-- Suggests reboot after completion
+**Options:**
+- `--dry-run` — show what would be removed without deleting anything
+- `--all-users` — clean all user accounts (default: current user only)
 
-**Excludes:** Microsoft Edge, Windows App (Remote Desktop), AutoUpdate (MAU)
+**Interactive prompts ask whether to keep:**
+- Microsoft Edge
+- Windows App (Remote Desktop)
+- Microsoft AutoUpdate (MAU)
+- Microsoft fonts
+
+**What it removes (6 phases):**
+1. **Processes** — kills running Microsoft processes (with confirmation)
+2. **Applications** — Word, Excel, PowerPoint, Outlook, OneNote, Teams, OneDrive, SharePoint (and optionally Edge, Windows App, MAU)
+3. **Per-user files** — Containers, Group Containers, Application Scripts, Application Support, Preferences, Caches, Saved Application State, Logs, WebKit, HTTPStorages, Cookies, User Launch Agents, Login Items (legacy + SMAppService/BTM), Dock icons, OneDrive data folders, legacy Office data
+4. **System files** — Launch Daemons/Agents (unloaded before removal), Privileged Helper Tools, System Application Support, System/Managed Preferences, Installer receipts, Fonts, Kernel extensions, Internet Plug-Ins
+5. **Discovery scan** — searches for any remaining Microsoft-related files missed by static removal, with option to remove
+6. **System refresh** — resets Launch Services database, restarts Finder, resets Background Task Manager
+
+**Cleanup approach:** Uses glob patterns (`com.microsoft.*`, `UBF8T346G9.*`) to catch items dynamically rather than relying solely on hardcoded paths. Exclusion checks honour user choices about kept apps throughout all phases.
 
 ### office_files_to_remove.txt
-Reference list of all Microsoft Office-related file paths on macOS. Used as a reference for the cleanup script.
+Snapshot of Microsoft Office-related file paths found on this Mac (Jan 2026). Historical reference only — the script now discovers paths dynamically.
 
 ## Warnings
 - Requires `sudo` (root access)
-- **Destructive** - permanently removes apps and data
-- Hardcoded to `/Users/andrewrobb` - update `USER_HOME` variable if running on a different account
-- Close all Microsoft apps before running
+- **Destructive** — permanently removes apps and data
+- Use `--dry-run` first to audit what will be removed
+- The discovery scan (Phase 5) may find false positives — review before confirming removal
+- Close all Microsoft apps before running (script offers to kill them)
