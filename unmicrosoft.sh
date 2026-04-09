@@ -1,13 +1,13 @@
 #!/bin/bash
 # ==============================================================================
-# Microsoft Office / M365 Complete Removal Script for macOS
+# unmicrosoft — Complete M365 / Office removal for macOS
 #
 # Removes all traces of Microsoft Office, OneDrive, Teams, SharePoint, and
 # related M365 products. Interactive prompts let you keep Edge and/or
 # Windows App. AutoUpdate (MAU) is always removed — Edge and Windows App
 # use their own updaters.
 #
-# Usage: sudo bash remove_microsoft_office.sh [--dry-run] [--all-users]
+# Usage: sudo bash unmicrosoft.sh [--dry-run] [--all-users]
 # ==============================================================================
 
 set -uo pipefail

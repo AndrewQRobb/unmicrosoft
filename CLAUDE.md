@@ -1,14 +1,13 @@
-# Office Cleanup Scripts
+# unmicrosoft
 
-macOS scripts for completely removing all traces of Microsoft Office / M365 products.
+Complete M365 / Office removal tool for macOS — like they were never installed.
 
-## Scripts
+## Script
 
-### remove_microsoft_office.sh
-Comprehensive, interactive removal of all Microsoft Office, OneDrive, Teams, SharePoint, and M365 traces from macOS.
+### unmicrosoft.sh
 
 ```bash
-sudo bash remove_microsoft_office.sh [--dry-run] [--all-users]
+sudo bash unmicrosoft.sh [--dry-run] [--all-users]
 ```
 
 **Options:**
@@ -18,12 +17,13 @@ sudo bash remove_microsoft_office.sh [--dry-run] [--all-users]
 **Interactive prompts ask whether to keep:**
 - Microsoft Edge
 - Windows App (Remote Desktop)
-- Microsoft AutoUpdate (MAU)
 - Microsoft fonts
+
+AutoUpdate (MAU) is always removed — Edge and Windows App use their own updaters.
 
 **What it removes (6 phases):**
 1. **Processes** — kills running Microsoft processes (with confirmation)
-2. **Applications** — Word, Excel, PowerPoint, Outlook, OneNote, Teams, OneDrive, SharePoint, Error Reporting (and optionally Edge, Windows App); MAU always removed (Edge/WinApp use own updaters)
+2. **Applications** — Word, Excel, PowerPoint, Outlook, OneNote, Teams, OneDrive, SharePoint, Error Reporting, AutoUpdate
 3. **Per-user files** — Containers (bundle-ID + display-name), Group Containers, Application Scripts, Application Support, Preferences (incl. ByHost), Caches, Saved Application State, Logs, WebKit, HTTPStorages, Cookies, iCloud containers (Mobile Documents), CloudDocs session data, File Provider configs, Recent document lists, CloudStorage mount points, Notification icon cache, Widget archives (chronod), Daemon Container caches, Darwin temp/cache dirs (/private/var/folders), User Launch Agents, Login Items (legacy + SMAppService/BTM), Dock icons, OneDrive data folders, legacy Office dirs, TCC privacy permissions (per-bundle reset), Notification Center stale entries
 4. **System files** — Launch Daemons/Agents (unloaded before removal), Privileged Helper Tools, System Application Support, System/Managed Preferences, Installer receipts, Fonts, Kernel extensions, Internet Plug-Ins, Teams Core Audio driver, Spotlight importer, Legacy receipts, Package database (pkgutil --forget), System TCC entries
 5. **Discovery scan** — searches for any remaining Microsoft-related files missed by static removal, with option to remove
